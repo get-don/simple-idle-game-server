@@ -3,6 +3,9 @@ using System.Text.Json;
 
 namespace GameServer.Middlewares;
 
+/*
+ * 전역 예외 처리 미들웨어
+ */
 public class GlobalExceptionMiddleware
 {
     private readonly RequestDelegate _next;

@@ -4,6 +4,9 @@ using System.Text.Json;
 
 namespace GameServer.Middlewares;
 
+/*
+ * 로그인 성공 시 생성된 Token 검증 미들웨어
+ */
 public class SessionAuthMiddleware : IMiddleware
 {
     private readonly string[] _skipPaths;
@@ -49,16 +52,18 @@ public class SessionAuthMiddleware : IMiddleware
         await next(context);
     }
 
+    // appsettings.json에 지정된 endpoint 무시
     private bool ShouldSkip(string path) => _skipPaths.Any(p => path.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
     private static bool IsAnonymousEndpoint(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
-        if (endpoint == null) return false;
+        if (endpoint is null) return false;
 
         return endpoint.Metadata.GetMetadata<AllowAnonymousAttribute>() != null;
     }
 
+    // [AllowAnonymous] 속성이 지정된 endpoint 무시
     private static string? ExtractSessionToken(HttpContext context)
     {
         if (!context.Request.Headers.TryGetValue("X-Session-Token", out var token))

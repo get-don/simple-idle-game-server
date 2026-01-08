@@ -4,6 +4,7 @@ namespace GameServer.Utils;
 
 public static class TokenGenerator
 {
+    // 로그인 성공 시 클라이언트로 전송할 토큰
     // 32 bytes = 256-bit
     public static string CreateSessionToken(int bytes = 32)
     {

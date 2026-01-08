@@ -55,7 +55,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login(AccountDto accountDto)
     {
         var account = await _repository.GetAccount(accountDto.Email);
-        if(account == null)
+        if(account is null)
             return Unauthorized();
 
         var passwordHasher = new PasswordHasher<AccountEntity>();
