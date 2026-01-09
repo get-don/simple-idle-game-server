@@ -1,4 +1,5 @@
-﻿using GameServer.Repositories.Interfaces;
+﻿using GameServer.Domain.DTOs;
+using GameServer.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 
@@ -48,6 +49,8 @@ public class SessionAuthMiddleware : IMiddleware
         }
 
         context.Items["AccountId"] = session.AccountId;
+        
+        Console.WriteLine($"[AuthMiddleware] Token: {token}, AccountId: {session.AccountId}");
 
         await next(context);
     }

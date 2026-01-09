@@ -7,8 +7,8 @@ namespace GameServer.Controllers;
 [ApiController]
 public class UsersController : ControllerBase
 {
-    [HttpGet]
-    public IActionResult GetUserData()
+    [HttpGet("Info")]
+    public IActionResult GetUserInfo()
     {        
         return Ok();
     }

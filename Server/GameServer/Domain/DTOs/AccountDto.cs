@@ -13,5 +13,5 @@ public class AccountDto
     [MinLength(4), MaxLength(20)]
     public string Password { get; set; } = "";
 
-    public string? Token { get; set; } = "";
+    public string? Token { get; set; }
 }

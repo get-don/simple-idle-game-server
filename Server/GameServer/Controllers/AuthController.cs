@@ -29,6 +29,8 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> Register(AccountDto accountDto)
     {
+        Console.WriteLine($"[Register] Email: {accountDto.Email}, Password: {accountDto.Password}");
+
         if (await _repository.Exists(accountDto.Email))
             return Conflict();
 
@@ -54,6 +56,8 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Login(AccountDto accountDto)
     {
+        Console.WriteLine($"[Login] Email: {accountDto.Email}, Password: {accountDto.Password}");
+
         var account = await _repository.GetAccount(accountDto.Email);
         if(account is null)
             return Unauthorized();
@@ -90,6 +94,7 @@ public class AuthController : ControllerBase
             if (await _cache.SaveSession(session, TimeSpan.FromMinutes(5)))
             {
                 ok = true;
+                accountDto.Password = "";
                 accountDto.Token = token;
                 break;
             }    
@@ -99,6 +104,8 @@ public class AuthController : ControllerBase
         {
             return StatusCode(500);
         }
+
+        Console.WriteLine($"[Login] Email: {accountDto.Email}, Token: {accountDto.Token}");
 
         return Ok(accountDto);
     }

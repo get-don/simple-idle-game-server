@@ -40,8 +40,8 @@ public class AccountCache : IAccountCache
         if (await GetSession(session.Token) != null)
             return false;
 
-        _testUserSession.Add(session.Token, session);
-        _testSessionToken.Add(session.AccountId, session.Token);
+        _testUserSession[session.Token] = session;
+        _testSessionToken[session.AccountId] = session.Token;
 
         return true;
     }
