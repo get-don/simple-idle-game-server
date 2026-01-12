@@ -37,8 +37,6 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<SessionAuthMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-
-
 app.UseAuthorization();
 
 app.MapControllers();

@@ -41,7 +41,7 @@ public class SessionAuthMiddleware : IMiddleware
             return;
         }
 
-        var session = await _cache.GetSession(token);
+        var session = await _cache.GetSessionAsync(token);
         if(session is null)
         {
             await Unauthorized(context, "Invalid or expired token");

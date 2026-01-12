@@ -31,7 +31,7 @@ public class AuthController : ControllerBase
     {
         Console.WriteLine($"[Register] Email: {accountDto.Email}, Password: {accountDto.Password}");
 
-        if (await _repository.Exists(accountDto.Email))
+        if (await _repository.ExistsAsync(accountDto.Email))
             return Conflict();
 
         var account = new AccountEntity()
@@ -42,7 +42,7 @@ public class AuthController : ControllerBase
         var passwordHasher = new PasswordHasher<AccountEntity>();
         account.Password = passwordHasher.HashPassword(new AccountEntity(), accountDto.Password);
                 
-        await _repository.CreateAccount(account);
+        await _repository.CreateAccountAsync(account);
 
         return Ok();
     }
@@ -58,9 +58,11 @@ public class AuthController : ControllerBase
     {
         Console.WriteLine($"[Login] Email: {accountDto.Email}, Password: {accountDto.Password}");
 
-        var account = await _repository.GetAccount(accountDto.Email);
+        var account = await _repository.GetAccountAsync(accountDto.Email);
         if(account is null)
             return Unauthorized();
+
+        Console.WriteLine($"{account.AccountId}, {account.Email}, {account.CreatedAt}, {account.LastLoginTime}");
 
         var passwordHasher = new PasswordHasher<AccountEntity>();
         var result = passwordHasher.VerifyHashedPassword(new AccountEntity(), account.Password, accountDto.Password);
@@ -71,7 +73,7 @@ public class AuthController : ControllerBase
         }
 
         // 기존 접속 있다면?
-        var oldSessionKey = await _cache.GetSessionTokenByAccountId(account.AccountId);
+        var oldSessionKey = await _cache.GetSessionTokenByAccountIdAsync(account.AccountId);
         if (oldSessionKey != null)
         {
             // 레디스에 캐시된 정보들의 TTL을 모두 변경한다.
@@ -88,10 +90,11 @@ public class AuthController : ControllerBase
             {
                 AccountId = account.AccountId,
                 Email = account.Email,
-                Token = token
+                Token = token,
+                LoginTime = DateTime.UtcNow
             };
 
-            if (await _cache.SaveSession(session, TimeSpan.FromMinutes(5)))
+            if (await _cache.TryCreateSessionAsync(session, TimeSpan.FromMinutes(5)))
             {
                 ok = true;
                 accountDto.Password = "";
@@ -104,6 +107,8 @@ public class AuthController : ControllerBase
         {
             return StatusCode(500);
         }
+
+        await _repository.LoginAsync(account.AccountId);
 
         Console.WriteLine($"[Login] Email: {accountDto.Email}, Token: {accountDto.Token}");
 

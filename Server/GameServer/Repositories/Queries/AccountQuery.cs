@@ -4,7 +4,6 @@ public static class AccountQuery
 {
     public const string InsertAccount = """
         INSERT INTO t_account (email, password) VALUES (@Email, @Password);
-        SELECT LAST_INSERT_ID();
         """;
 
     public const string ExistsAccount = """
@@ -17,11 +16,11 @@ public static class AccountQuery
 
     public const string LoadAccount = """
         SELECT
-            aid,
-            email,
-            password,
-            create_time,
-            last_login_time
+            aid AS AccountId,
+            email AS Email,
+            password AS Password,
+            create_time AS CreatedAt,
+            last_login_time AS LastLoginTime
         FROM t_account
         WHERE email = @Email;
         """;
