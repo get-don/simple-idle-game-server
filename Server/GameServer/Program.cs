@@ -2,8 +2,14 @@ using GameServer.Middlewares;
 using GameServer.Repositories;
 using GameServer.Repositories.Interfaces;
 using GameServer.Utils;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Redis
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis")!)
+);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
