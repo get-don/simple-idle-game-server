@@ -62,8 +62,6 @@ public class AuthController : ControllerBase
         if(account is null)
             return Unauthorized();
 
-        Console.WriteLine($"{account.AccountId}, {account.Email}, {account.CreatedAt}, {account.LastLoginTime}");
-
         var passwordHasher = new PasswordHasher<AccountEntity>();
         var result = passwordHasher.VerifyHashedPassword(new AccountEntity(), account.Password, accountDto.Password);
         if (result == PasswordVerificationResult.Failed)
@@ -72,12 +70,8 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        // 기존 접속 있다면?
-        var oldSessionKey = await _cache.GetSessionTokenByAccountIdAsync(account.AccountId);
-        if (oldSessionKey != null)
-        {
-            // 레디스에 캐시된 정보들의 TTL을 모두 변경한다.
-        }
+        // 기존 접속이 있다면?
+        var isAlreadyConnected = await _cache.GetSessionTokenByAccountIdAsync(account.AccountId);
 
         // 방어 코드
         bool ok = false;
@@ -108,9 +102,14 @@ public class AuthController : ControllerBase
             return StatusCode(500);
         }
 
+        if (isAlreadyConnected != null)
+        {
+            // 레디스에 캐시된 정보들의 TTL을 모두 변경한다.
+        }
+
         await _repository.LoginAsync(account.AccountId);
 
-        Console.WriteLine($"[Login] Email: {accountDto.Email}, Token: {accountDto.Token}");
+        Console.WriteLine($"[Login] Success Email: {accountDto.Email}, Token: {accountDto.Token}");
 
         return Ok(accountDto);
     }

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb
+  namespace: dev
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS `idle_game` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    USE `idle_game`;
+
+    CREATE TABLE `t_account` (
+      `aid` bigint NOT NULL AUTO_INCREMENT,
+      `email` varchar(50) NOT NULL,
+      `password` varchar(250) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+      `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      `last_login_time` datetime DEFAULT NULL,
+      PRIMARY KEY (`aid`),
+      UNIQUE KEY `t_account_unique` (`email`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

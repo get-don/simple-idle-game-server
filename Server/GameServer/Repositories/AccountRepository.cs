@@ -13,7 +13,7 @@ public class AccountRepository : IAccountRepository
 
     public AccountRepository(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("MySqlConnection");
+        _connectionString = configuration.GetConnectionString("MySql");
     }
 
     public async Task CreateAccountAsync(AccountEntity account)

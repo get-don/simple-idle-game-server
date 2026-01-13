@@ -7,6 +7,12 @@
 # 도구 및 환경
 - **.NET**
   - .NET 9.0
-  - ASP.NET Core 컨트롤러 기반 API 서버
+  - ASP.NET Core (Controller 기반)
+  - Dapper
+ 
+- **Database**
+  - MySql
+  - Redis
  
 - **Kubernetes**
+  - kind (Docker 기반 로컬 클러스터)

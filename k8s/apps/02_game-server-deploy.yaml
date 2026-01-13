@@ -29,6 +29,9 @@ spec:
               memory: "256Mi"
           ports:
             - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: game-server-secret           
           startupProbe:
             httpGet:
               path: "/startup"
