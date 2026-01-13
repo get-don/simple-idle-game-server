@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace GameServer.Domain.DTOs;
+namespace GameServer.Models.DTOs;
 
 public class AccountDto
 {

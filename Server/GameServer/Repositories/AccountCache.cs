@@ -1,4 +1,4 @@
-﻿using GameServer.Domain.Models;
+﻿using GameServer.Models.DbModels;
 using GameServer.Repositories.Interfaces;
 using StackExchange.Redis;
 using System.Text.Json;

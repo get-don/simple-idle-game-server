@@ -1,11 +1,11 @@
-﻿using GameServer.Domain.Entities;
+﻿using GameServer.Models.DbModels;
 
 namespace GameServer.Repositories.Interfaces;
 
 public interface IAccountRepository
 {
-    Task CreateAccountAsync(AccountEntity account);
+    Task CreateAccountAsync(Account account);
     Task<bool> ExistsAsync(string email);
-    Task<AccountEntity?> GetAccountAsync(string email);
+    Task<Account?> GetAccountAsync(string email);
     Task LoginAsync(long accountId);
 }

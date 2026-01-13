@@ -1,5 +1,4 @@
-﻿using GameServer.Domain.DTOs;
-using GameServer.Repositories.Interfaces;
+﻿using GameServer.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 

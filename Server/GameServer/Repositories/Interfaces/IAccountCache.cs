@@ -1,4 +1,5 @@
-﻿using GameServer.Domain.Models;
+﻿using GameServer.Models.DbModels;
+
 namespace GameServer.Repositories.Interfaces;
 
 public interface IAccountCache

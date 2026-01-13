@@ -1,11 +1,10 @@
-﻿using GameServer.Domain.DTOs;
-using GameServer.Domain.Entities;
-using GameServer.Domain.Models;
-using GameServer.Repositories.Interfaces;
+﻿using GameServer.Repositories.Interfaces;
 using GameServer.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using GameServer.Models.DbModels;
+using GameServer.Models.DTOs;
 
 namespace GameServer.Controllers;
 
@@ -34,13 +33,13 @@ public class AuthController : ControllerBase
         if (await _repository.ExistsAsync(accountDto.Email))
             return Conflict();
 
-        var account = new AccountEntity()
+        var account = new Account()
         {
             Email = accountDto.Email
         };
 
-        var passwordHasher = new PasswordHasher<AccountEntity>();
-        account.Password = passwordHasher.HashPassword(new AccountEntity(), accountDto.Password);
+        var passwordHasher = new PasswordHasher<Account>();
+        account.Password = passwordHasher.HashPassword(new Account(), accountDto.Password);
                 
         await _repository.CreateAccountAsync(account);
 
@@ -62,8 +61,8 @@ public class AuthController : ControllerBase
         if(account is null)
             return Unauthorized();
 
-        var passwordHasher = new PasswordHasher<AccountEntity>();
-        var result = passwordHasher.VerifyHashedPassword(new AccountEntity(), account.Password, accountDto.Password);
+        var passwordHasher = new PasswordHasher<Account>();
+        var result = passwordHasher.VerifyHashedPassword(new Account(), account.Password, accountDto.Password);
         if (result == PasswordVerificationResult.Failed)
         {
             ModelState.AddModelError("Password", "Wrong Password");

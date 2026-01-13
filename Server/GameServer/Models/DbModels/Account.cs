@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace GameServer.Domain.Entities;
+namespace GameServer.Models.DbModels;
 
-public class AccountEntity
+public class Account
 {
     public long AccountId { get; set; }
     

@@ -1,12 +1,11 @@
-﻿using GameServer.Domain.DTOs;
-using GameServer.Repositories.Interfaces;
+﻿using GameServer.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using FluentAssertions;
-using GameServer.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using GameServer.Domain.Models;
 using GameServer.Controllers;
+using GameServer.Models.DbModels;
+using GameServer.Models.DTOs;
 
 namespace UnitTests.Controllers;
 
@@ -40,7 +39,7 @@ public class AuthControllerTests
 
         result.Should().BeOfType<ConflictResult>();
 
-        _repo.Verify(r => r.CreateAccountAsync(It.IsAny<AccountEntity>()), Times.Never);
+        _repo.Verify(r => r.CreateAccountAsync(It.IsAny<Account>()), Times.Never);
     }
 
     [Fact]
@@ -60,7 +59,7 @@ public class AuthControllerTests
         result.Should().BeOfType<OkResult>();
 
         _repo.Verify(r => r.CreateAccountAsync(
-            It.Is<AccountEntity>(a =>
+            It.Is<Account>(a =>
                 a.Email == "test@mail.com" &&
                 !string.IsNullOrEmpty(a.Password)
             )
@@ -71,7 +70,7 @@ public class AuthControllerTests
     public async Task Login_WhenAccountNotExists_ReturnsUnauthorized()
     {
         _repo.Setup(r => r.GetAccountAsync("test@mail.com"))
-            .ReturnsAsync((AccountEntity?)null);
+            .ReturnsAsync((Account?)null);
 
         var dto = new AccountDto
         {
@@ -87,12 +86,12 @@ public class AuthControllerTests
     [Fact()]
     public async Task Login_WhenPasswordWrong_ReturnsBadRequest()
     {
-        var hasher = new PasswordHasher<AccountEntity>();
-        var account = new AccountEntity
+        var hasher = new PasswordHasher<Account>();
+        var account = new Account
         {
             AccountId = 1,
             Email = "test@mail.com",
-            Password = hasher.HashPassword(new AccountEntity(), "test1234")
+            Password = hasher.HashPassword(new Account(), "test1234")
         };
 
         _repo.Setup(r => r.GetAccountAsync(account.Email))
@@ -112,12 +111,12 @@ public class AuthControllerTests
     [Fact]
     public async Task Login_WhenSuccess_ReturnsOkWithToken()
     {
-        var hasher = new PasswordHasher<AccountEntity>();
-        var account = new AccountEntity
+        var hasher = new PasswordHasher<Account>();
+        var account = new Account
         {
             AccountId = 1,
             Email = "test@mail.com",
-            Password = hasher.HashPassword(new AccountEntity(), "test1234")
+            Password = hasher.HashPassword(new Account(), "test1234")
         };
 
         _repo.Setup(r => r.GetAccountAsync(account.Email))
