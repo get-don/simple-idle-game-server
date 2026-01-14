@@ -23,15 +23,20 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("Register")]
-    [EndpointSummary("계정 등록")]    
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<IActionResult> Register(AccountDto accountDto)
+    [EndpointSummary("계정 등록")]
+   // [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse>> Register(AccountDto accountDto)
     {
         Console.WriteLine($"[Register] Email: {accountDto.Email}, Password: {accountDto.Password}");
 
+        var response = new ApiResponse();
+
         if (await _repository.ExistsAsync(accountDto.Email))
-            return Conflict();
+        {
+            response.Ok = false;
+            response.ErrorCode = ErrorCode.EmailAlreadyExists;
+            return Ok(response);
+        }
 
         var account = new Account()
         {
@@ -43,30 +48,34 @@ public class AuthController : ControllerBase
                 
         await _repository.CreateAccountAsync(account);
 
-        return Ok();
+        return Ok(response);
     }
 
     [AllowAnonymous]
     [HttpPost("Login")]
     [EndpointSummary("로그인")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> Login(AccountDto accountDto)
+   // [ProducesResponseType(typeof(ApiResponse<AccountDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse<AccountDto>>> Login(AccountDto accountDto)
     {
         Console.WriteLine($"[Login] Email: {accountDto.Email}, Password: {accountDto.Password}");
 
+        var response = new ApiResponse<AccountDto>();
+
         var account = await _repository.GetAccountAsync(accountDto.Email);
         if(account is null)
-            return Unauthorized();
+        {
+            response.Ok = false;
+            response.ErrorCode = ErrorCode.AccountNotExist;
+            return Ok(response);
+        }
 
         var passwordHasher = new PasswordHasher<Account>();
         var result = passwordHasher.VerifyHashedPassword(new Account(), account.Password, accountDto.Password);
         if (result == PasswordVerificationResult.Failed)
         {
-            ModelState.AddModelError("Password", "Wrong Password");
-            return BadRequest(ModelState);
+            response.Ok = false;
+            response.ErrorCode = ErrorCode.WrongPassword;
+            return Ok(response);
         }
 
         // 기존 접속이 있다면?
@@ -98,7 +107,9 @@ public class AuthController : ControllerBase
 
         if(!ok)
         {
-            return StatusCode(500);
+            response.Ok = false;
+            response.ErrorCode = ErrorCode.InternalServerError;
+            return Ok(response);
         }
 
         if (isAlreadyConnected != null)
@@ -110,6 +121,7 @@ public class AuthController : ControllerBase
 
         Console.WriteLine($"[Login] Success Email: {accountDto.Email}, Token: {accountDto.Token}");
 
-        return Ok(accountDto);
+        response.Result = accountDto;
+        return Ok(response);
     }
 }

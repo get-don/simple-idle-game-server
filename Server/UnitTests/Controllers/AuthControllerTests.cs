@@ -1,7 +1,5 @@
 ﻿using GameServer.Repositories.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using Moq;
-using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using GameServer.Controllers;
 using GameServer.Models.DbModels;
@@ -11,22 +9,22 @@ namespace UnitTests.Controllers;
 
 public class AuthControllerTests
 {
-    private readonly Mock<IAccountRepository> _repo;
+    private readonly Mock<IAccountRepository> _repository;
     private readonly Mock<IAccountCache> _cache;
     private readonly AuthController _controller;
 
     public AuthControllerTests()
     {
-        _repo = new Mock<IAccountRepository>();
+        _repository = new Mock<IAccountRepository>();
         _cache = new Mock<IAccountCache>();
-        _controller = new AuthController(_repo.Object, _cache.Object);
+        _controller = new AuthController(_repository.Object, _cache.Object);
     }
 
 
     [Fact()]
-    public async Task Register_WhenAccountExists_ReturnsConflict()
+    public async Task Register_WhenEmailExists_ShouldReturnEmailAlreadyExists()
     {
-        _repo.Setup(r => r.ExistsAsync("test@mail.com"))
+        _repository.Setup(r => r.ExistsAsync("test@mail.com"))
             .ReturnsAsync(true);
 
         var dto = new AccountDto
@@ -36,16 +34,18 @@ public class AuthControllerTests
         };
 
         var result = await _controller.Register(dto);
+        var response = result.ExtractOkValue<ApiResponse>();
 
-        result.Should().BeOfType<ConflictResult>();
+        Assert.False(response.Ok);
+        Assert.Equal(ErrorCode.EmailAlreadyExists, response.ErrorCode);
 
-        _repo.Verify(r => r.CreateAccountAsync(It.IsAny<Account>()), Times.Never);
+        _repository.Verify(r => r.CreateAccountAsync(It.IsAny<Account>()), Times.Never);
     }
 
-    [Fact]
-    public async Task Register_WhenNewAccount_ReturnsOk()
+    [Fact()]
+    public async Task Register_WhenNewEmail_ShouldCreateAccount_AndReturnOkResult()
     {
-        _repo.Setup(r => r.ExistsAsync(It.IsAny<string>()))
+        _repository.Setup(r => r.ExistsAsync(It.IsAny<string>()))
             .ReturnsAsync(false);
 
         var dto = new AccountDto
@@ -55,10 +55,11 @@ public class AuthControllerTests
         };
 
         var result = await _controller.Register(dto);
+        var response = result.ExtractOkValue<ApiResponse>();
 
-        result.Should().BeOfType<OkResult>();
+        Assert.True(response.Ok);
 
-        _repo.Verify(r => r.CreateAccountAsync(
+        _repository.Verify(r => r.CreateAccountAsync(
             It.Is<Account>(a =>
                 a.Email == "test@mail.com" &&
                 !string.IsNullOrEmpty(a.Password)
@@ -66,10 +67,10 @@ public class AuthControllerTests
         ), Times.Once);
     }
 
-    [Fact]
-    public async Task Login_WhenAccountNotExists_ReturnsUnauthorized()
+    [Fact()]
+    public async Task Login_WhenAccountNotExist_ShouldReturnAccountNotExist()
     {
-        _repo.Setup(r => r.GetAccountAsync("test@mail.com"))
+        _repository.Setup(r => r.GetAccountAsync("test@mail.com"))
             .ReturnsAsync((Account?)null);
 
         var dto = new AccountDto
@@ -80,11 +81,16 @@ public class AuthControllerTests
 
         var result = await _controller.Login(dto);
 
-        result.Should().BeOfType<UnauthorizedResult>();
+        var response = result.ExtractOkValue<ApiResponse<AccountDto>>();
+        Assert.False(response.Ok);
+        Assert.Equal(ErrorCode.AccountNotExist, response.ErrorCode);
+
+        _repository.Verify(r => r.LoginAsync(It.IsAny<long>()), Times.Never);
+        _cache.Verify(c => c.TryCreateSessionAsync(It.IsAny<UserSession>(), It.IsAny<TimeSpan>()), Times.Never);
     }
 
     [Fact()]
-    public async Task Login_WhenPasswordWrong_ReturnsBadRequest()
+    public async Task Login_WhenWrongPassword_ShouldReturnWrongPassword()
     {
         var hasher = new PasswordHasher<Account>();
         var account = new Account
@@ -94,7 +100,7 @@ public class AuthControllerTests
             Password = hasher.HashPassword(new Account(), "test1234")
         };
 
-        _repo.Setup(r => r.GetAccountAsync(account.Email))
+        _repository.Setup(r => r.GetAccountAsync(account.Email))
             .ReturnsAsync(account);
 
         var dto = new AccountDto
@@ -105,21 +111,26 @@ public class AuthControllerTests
 
         var result = await _controller.Login(dto);
 
-        result.Should().BeOfType<BadRequestObjectResult>();
+        var response = result.ExtractOkValue<ApiResponse<AccountDto>>();
+        Assert.False(response.Ok);
+        Assert.Equal(ErrorCode.WrongPassword, response.ErrorCode);
+
+        _repository.Verify(r => r.LoginAsync(It.IsAny<long>()), Times.Never);
+        _cache.Verify(c => c.TryCreateSessionAsync(It.IsAny<UserSession>(), It.IsAny<TimeSpan>()), Times.Never);
     }
 
-    [Fact]
-    public async Task Login_WhenSuccess_ReturnsOkWithToken()
+    [Fact()]
+    public async Task Login_WhenSuccess_ShouldReturnToken_AndCallLoginAsync()
     {
         var hasher = new PasswordHasher<Account>();
         var account = new Account
         {
-            AccountId = 1,
+            AccountId = 1000,
             Email = "test@mail.com",
             Password = hasher.HashPassword(new Account(), "test1234")
         };
 
-        _repo.Setup(r => r.GetAccountAsync(account.Email))
+        _repository.Setup(r => r.GetAccountAsync(account.Email))
             .ReturnsAsync(account);
 
         _cache.Setup(c => c.GetSessionTokenByAccountIdAsync(account.AccountId))
@@ -139,12 +150,17 @@ public class AuthControllerTests
 
         var result = await _controller.Login(dto);
 
-        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        var body = ok.Value.Should().BeOfType<AccountDto>().Subject;
+        var response = result.ExtractOkValue<ApiResponse<AccountDto>>();
+        Assert.True(response.Ok);
+        Assert.NotNull(response.Result);
+        Assert.Equal("test@mail.com", response.Result!.Email);
+        Assert.Equal("", response.Result.Password);
+        Assert.False(string.IsNullOrWhiteSpace(response.Result.Token));
 
-        body.Token.Should().NotBeNullOrEmpty();
-        body.Password.Should().BeEmpty();
-
-        _repo.Verify(r => r.LoginAsync(account.AccountId), Times.Once);
+        _repository.Verify(r => r.LoginAsync(1000), Times.Once);
+        _cache.Verify(c => c.TryCreateSessionAsync(
+            It.Is<UserSession>(s => s.AccountId == 1000 && s.Email == "test@mail.com" && !string.IsNullOrWhiteSpace(s.Token)),
+            It.Is<TimeSpan>(t => t == TimeSpan.FromMinutes(5))
+        ), Times.Once);
     }
 }
