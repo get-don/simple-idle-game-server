@@ -15,6 +15,9 @@ public enum ErrorCode
     WrongPassword,
     NotLoggedIn,
     AuthTokenNotExists,
+
+    // Game
+    NotExistsPlayer = 3000,
 }
 
 public class ApiResponse<T>(bool ok = true) where T : class

@@ -11,16 +11,16 @@ public class AccountRepository : IAccountRepository
 {
     private readonly string? _connectionString;
 
-    public AccountRepository(IConfiguration configuration)
+    public AccountRepository(IConfiguration config)
     {
-        _connectionString = configuration.GetConnectionString("MySql");
+        _connectionString = config.GetConnectionString("MySql");
     }
 
-    public async Task CreateAccountAsync(Account account)
+    public async Task<long> CreateAccountAsync(Account account)
     {
         await using var connection = new MySqlConnection(_connectionString);
 
-        await connection.ExecuteAsync(AccountQuery.InsertAccount, account);        
+        return await connection.ExecuteScalarAsync<long>(AccountQuery.InsertAccount, account);
     }
 
     public async Task<bool> ExistsAsync(string email)
@@ -40,6 +40,6 @@ public class AccountRepository : IAccountRepository
     public async Task LoginAsync(long accountId)
     {
         await using var connection = new MySqlConnection(_connectionString);
-        await connection.ExecuteAsync(AccountQuery.UpdateLoginTime, new { @Aid = accountId});
+        await connection.ExecuteAsync(AccountQuery.UpdateLoginTime, new { AccountId = accountId});
     }
 }

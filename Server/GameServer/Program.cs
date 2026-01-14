@@ -28,7 +28,10 @@ builder.Services.AddSingleton<AppState>();
 builder.Services.AddHostedService<AppInitializer>();
 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+
 builder.Services.AddScoped<IAccountCache, AccountCache>();
+
 builder.Services.AddScoped<SessionAuthMiddleware>();
 
 var app = builder.Build();

@@ -12,13 +12,15 @@ namespace GameServer.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly IAccountRepository _repository;
-    private readonly IAccountCache _cache;
+    private readonly IPlayerRepository _playerRepository;
+    private readonly IAccountRepository _accountRepository;
+    private readonly IAccountCache _accountCache;
 
-    public AuthController(IAccountRepository repo, IAccountCache cache)
+    public AuthController(IPlayerRepository playerRepo, IAccountRepository accountRepo, IAccountCache accountCache)
     {
-        _repository = repo;
-        _cache = cache;
+        _playerRepository = playerRepo;
+        _accountRepository = accountRepo;
+        _accountCache = accountCache;
     }
 
     [AllowAnonymous]
@@ -31,7 +33,7 @@ public class AuthController : ControllerBase
 
         var response = new ApiResponse();
 
-        if (await _repository.ExistsAsync(accountDto.Email))
+        if (await _accountRepository.ExistsAsync(accountDto.Email))
         {
             response.Ok = false;
             response.ErrorCode = ErrorCode.EmailAlreadyExists;
@@ -46,7 +48,16 @@ public class AuthController : ControllerBase
         var passwordHasher = new PasswordHasher<Account>();
         account.Password = passwordHasher.HashPassword(new Account(), accountDto.Password);
                 
-        await _repository.CreateAccountAsync(account);
+        var accountId = await _accountRepository.CreateAccountAsync(account);
+
+        await _playerRepository.CreatePlayerAsync(new PlayerInfo()
+        {
+            AccountId = accountId,
+            Level = 1,
+            GoldLevel = 1,
+            Stage = 1,
+            Gold = 0
+        });
 
         return Ok(response);
     }
@@ -61,7 +72,7 @@ public class AuthController : ControllerBase
 
         var response = new ApiResponse<AccountDto>();
 
-        var account = await _repository.GetAccountAsync(accountDto.Email);
+        var account = await _accountRepository.GetAccountAsync(accountDto.Email);
         if(account is null)
         {
             response.Ok = false;
@@ -79,7 +90,7 @@ public class AuthController : ControllerBase
         }
 
         // 기존 접속이 있다면?
-        var isAlreadyConnected = await _cache.GetSessionTokenByAccountIdAsync(account.AccountId);
+        var isAlreadyConnected = await _accountCache.GetSessionTokenByAccountIdAsync(account.AccountId);
 
         // 방어 코드
         bool ok = false;
@@ -96,7 +107,7 @@ public class AuthController : ControllerBase
                 LoginTime = DateTime.UtcNow
             };
 
-            if (await _cache.TryCreateSessionAsync(session, TimeSpan.FromMinutes(5)))
+            if (await _accountCache.TryCreateSessionAsync(session, TimeSpan.FromMinutes(5)))
             {
                 ok = true;
                 accountDto.Password = "";
@@ -117,9 +128,9 @@ public class AuthController : ControllerBase
             // 레디스에 캐시된 정보들의 TTL을 모두 변경한다.
         }
 
-        await _repository.LoginAsync(account.AccountId);
+        await _accountRepository.LoginAsync(account.AccountId);
 
-        Console.WriteLine($"[Login] Success Email: {accountDto.Email}, Token: {accountDto.Token}");
+        Console.WriteLine($"[Login] Success Email: {accountDto.Email}, AccountId: {account.AccountId}, Token: {accountDto.Token}");
 
         response.Result = accountDto;
         return Ok(response);

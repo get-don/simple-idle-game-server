@@ -10,12 +10,12 @@ namespace GameServer.Middlewares;
 public class SessionAuthMiddleware : IMiddleware
 {
     private readonly string[] _skipPaths;
-    private readonly IAccountCache _cache;
+    private readonly IAccountCache _accountCache;
 
-    public SessionAuthMiddleware(IConfiguration config, IAccountCache cache)
+    public SessionAuthMiddleware(IConfiguration config, IAccountCache accountCache)
     {
         _skipPaths = config.GetSection("AuthSkipPaths").Get<string[]>() ?? [];
-        _cache = cache;
+        _accountCache = accountCache;
     }
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -40,7 +40,7 @@ public class SessionAuthMiddleware : IMiddleware
             return;
         }
 
-        var session = await _cache.GetSessionAsync(token);
+        var session = await _accountCache.GetSessionAsync(token);
         if(session is null)
         {
             await Unauthorized(context, "Invalid or expired token");
