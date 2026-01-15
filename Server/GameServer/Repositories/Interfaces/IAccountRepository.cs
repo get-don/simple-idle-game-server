@@ -4,8 +4,8 @@ namespace GameServer.Repositories.Interfaces;
 
 public interface IAccountRepository
 {
-    Task<long> CreateAccountAsync(Account account);
+    Task<long> CreateAccountAsync(AccountEntity account);
     Task<bool> ExistsAsync(string email);
-    Task<Account?> GetAccountAsync(string email);
+    Task<AccountEntity?> GetAccountAsync(string email);
     Task LoginAsync(long accountId);
 }

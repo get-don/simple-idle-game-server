@@ -1,8 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿namespace GameServer.Models.DbModels;
 
-namespace GameServer.Models.DbModels;
-
-public class Account
+public class AccountEntity
 {
     public long AccountId { get; set; }
     

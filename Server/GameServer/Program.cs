@@ -1,8 +1,11 @@
 using GameServer.Middlewares;
+using GameServer.Models.DbModels;
 using GameServer.Repositories;
 using GameServer.Repositories.Interfaces;
 using GameServer.Services;
+using GameServer.Services.interfaces;
 using GameServer.Utils;
+using Microsoft.AspNetCore.Identity;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,9 +33,16 @@ builder.Services.AddHostedService<AppInitializer>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
 
-builder.Services.AddScoped<IAccountCache, AccountCache>();
+builder.Services.AddScoped<IRedisStore, RedisStore>();
+builder.Services.AddScoped<IAccountStore, AccountStore>();
 
 builder.Services.AddScoped<SessionAuthMiddleware>();
+
+builder.Services.AddSingleton<IPasswordHasher<AccountEntity>, PasswordHasher<AccountEntity>>();
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
+builder.Services.AddScoped<IStageService, StageService>();
 
 var app = builder.Build();
 

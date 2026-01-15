@@ -1,4 +1,4 @@
-﻿namespace GameServer.Models.DbModels;
+﻿namespace GameServer.Models;
 
 public class UserSession
 {

@@ -1,6 +1,6 @@
 ﻿namespace GameServer.Models.DbModels;
 
-public class PlayerInfo
+public class PlayerEntity
 {
     public long PlayerId { get; set; }
     public long AccountId { get; set; }

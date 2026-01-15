@@ -1,5 +1,5 @@
 ﻿namespace GameServer.Models.DTOs;
 
-public class StageBeginDto
+public class StageClearRequestDto
 {
 }

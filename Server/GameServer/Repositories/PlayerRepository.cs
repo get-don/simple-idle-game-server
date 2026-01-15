@@ -14,23 +14,23 @@ public class PlayerRepository : IPlayerRepository
         _connectionString = config.GetConnectionString("MySql");
     }
 
-    public async Task CreatePlayerAsync(PlayerInfo playerInfo)
+    public async Task CreatePlayerAsync(PlayerEntity playerInfo)
     {
         await using var connection = new MySqlConnection(_connectionString);
 
         await connection.ExecuteAsync(PlayerQuery.InsertPlayer, playerInfo);
     }
 
-    public async Task<PlayerInfo?> GetPlayerByAccountIdAsync(long accountId)
+    public async Task<PlayerEntity?> GetPlayerByAccountIdAsync(long accountId)
     {
         await using var connection = new MySqlConnection(_connectionString);
 
-        var playerInfo = await connection.QueryFirstOrDefaultAsync<PlayerInfo>(PlayerQuery.LoadPlayer, new { AccountId = accountId });
+        var playerInfo = await connection.QueryFirstOrDefaultAsync<PlayerEntity>(PlayerQuery.LoadPlayer, new { AccountId = accountId });
         return playerInfo;
 
     }
 
-    public async Task UpdatePlayerAsync(PlayerInfo playerInfo)
+    public async Task UpdatePlayerAsync(PlayerEntity playerInfo)
     {
         await using var connection = new MySqlConnection(_connectionString);
 

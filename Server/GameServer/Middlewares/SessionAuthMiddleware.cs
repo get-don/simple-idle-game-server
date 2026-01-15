@@ -1,4 +1,5 @@
 ﻿using GameServer.Repositories.Interfaces;
+using GameServer.Services;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json;
 
@@ -10,9 +11,9 @@ namespace GameServer.Middlewares;
 public class SessionAuthMiddleware : IMiddleware
 {
     private readonly string[] _skipPaths;
-    private readonly IAccountCache _accountCache;
+    private readonly IAccountStore _accountCache;
 
-    public SessionAuthMiddleware(IConfiguration config, IAccountCache accountCache)
+    public SessionAuthMiddleware(IConfiguration config, IAccountStore accountCache)
     {
         _skipPaths = config.GetSection("AuthSkipPaths").Get<string[]>() ?? [];
         _accountCache = accountCache;
@@ -49,7 +50,7 @@ public class SessionAuthMiddleware : IMiddleware
 
         context.Items["AccountId"] = session.AccountId;
         
-        Console.WriteLine($"[AuthMiddleware] Token: {token}, AccountId: {session.AccountId}");
+        Console.WriteLine($"[{nameof(SessionAuthMiddleware)}] Token: {token}, AccountId: {session.AccountId}");
 
         await next(context);
     }

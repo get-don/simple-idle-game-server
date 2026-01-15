@@ -4,8 +4,8 @@ namespace GameServer.Repositories.Interfaces;
 
 public interface IPlayerRepository
 {
-    public Task CreatePlayerAsync(PlayerInfo playerInfo);
-    public Task<PlayerInfo?> GetPlayerByAccountIdAsync(long accountId);
+    public Task CreatePlayerAsync(PlayerEntity playerInfo);
+    public Task<PlayerEntity?> GetPlayerByAccountIdAsync(long accountId);
 
-    public Task UpdatePlayerAsync(PlayerInfo playerInfo);
+    public Task UpdatePlayerAsync(PlayerEntity playerInfo);
 }

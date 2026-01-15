@@ -16,7 +16,7 @@ public class AccountRepository : IAccountRepository
         _connectionString = config.GetConnectionString("MySql");
     }
 
-    public async Task<long> CreateAccountAsync(Account account)
+    public async Task<long> CreateAccountAsync(AccountEntity account)
     {
         await using var connection = new MySqlConnection(_connectionString);
 
@@ -30,10 +30,10 @@ public class AccountRepository : IAccountRepository
         return await connection.ExecuteScalarAsync<bool>(AccountQuery.ExistsAccount, new { Email = email });
     }
 
-    public async Task<Account?> GetAccountAsync(string email)
+    public async Task<AccountEntity?> GetAccountAsync(string email)
     {
         await using var connection = new MySqlConnection(_connectionString);
-        var account = await connection.QueryFirstOrDefaultAsync<Account>(AccountQuery.LoadAccount, new { Email = email });
+        var account = await connection.QueryFirstOrDefaultAsync<AccountEntity>(AccountQuery.LoadAccount, new { Email = email });
         return account;
     }
 
