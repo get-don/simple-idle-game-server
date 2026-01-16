@@ -2,4 +2,5 @@
 
 public class StageClearRequestDto
 {
+    public int ClearStage { get; set; }
 }

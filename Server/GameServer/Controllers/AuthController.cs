@@ -20,9 +20,9 @@ public class AuthController : ControllerBase
     [HttpPost("Register")]
     [EndpointSummary("계정 등록")]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse>> Register(AccountDto accountDto)
+    public async Task<ActionResult<ApiResponse>> Register(AccountDto requestDto)
     {
-        var response = await _authService.RegisterAsync(accountDto);
+        var response = await _authService.RegisterAsync(requestDto);
         return Ok(response);
     }
 
@@ -30,9 +30,9 @@ public class AuthController : ControllerBase
     [HttpPost("Login")]
     [EndpointSummary("로그인")]
     [ProducesResponseType(typeof(ApiResponse<AccountDto>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<ApiResponse<AccountDto>>> Login(AccountDto accountDto)
+    public async Task<ActionResult<ApiResponse<AccountDto>>> Login(AccountDto requestDto)
     {
-        var response = await _authService.LoginAsync(accountDto);
+        var response = await _authService.LoginAsync(requestDto);
         return Ok(response);
     }
 }

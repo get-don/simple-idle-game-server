@@ -2,7 +2,7 @@
 using GameServer.Models.DbModels;
 using GameServer.Repositories.Interfaces;
 using GameServer.Repositories.Queries;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using static Dapper.SqlMapper;
 
 namespace GameServer.Repositories;

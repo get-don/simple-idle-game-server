@@ -26,15 +26,23 @@ namespace GameServer.Controllers
         }
 
         [HttpPost("LevelUp")]
-        public async Task LevelUp()
+        [EndpointSummary("레벨업")]
+        public async Task<ActionResult<ApiResponse<PlayerLevelUpResponseDto>>> LevelUp(PlayerLevelUpRequestDto requestDto)
         {
+            var accountId = (long)HttpContext.Items["AccountId"]!;
+            var response = await _playerService.PlayerLevelUp(accountId, requestDto);
 
+            return Ok(response);
         }
 
         [HttpPost("GoldLevelUp")]
-        public async Task GoldLevelUp()
+        [EndpointSummary("골드 레벨업")]
+        public async Task<ActionResult<ApiResponse<GoldLevelUpResponseDto>>> GoldLevelUp(GoldLevelUpRequestDto requestDto)
         {
+            var accountId = (long)HttpContext.Items["AccountId"]!;
+            var response = await _playerService.GoldLevelUp(accountId, requestDto);
 
+            return Ok(response);
         }
     }
 }

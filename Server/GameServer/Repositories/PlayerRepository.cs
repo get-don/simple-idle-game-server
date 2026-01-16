@@ -2,7 +2,7 @@
 using GameServer.Models.DbModels;
 using GameServer.Repositories.Interfaces;
 using GameServer.Repositories.Queries;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace GameServer.Repositories;
 
@@ -30,10 +30,48 @@ public class PlayerRepository : IPlayerRepository
 
     }
 
-    public async Task UpdatePlayerAsync(PlayerEntity playerInfo)
+    public async Task<bool> UpdatePlayerAsync(PlayerEntity playerInfo)
     {
         await using var connection = new MySqlConnection(_connectionString);
 
-        await connection.QueryAsync(PlayerQuery.UpdatePlayer, playerInfo);
+        var result = await connection.ExecuteAsync(PlayerQuery.UpdatePlayer, playerInfo);
+        return result == 1;
+    }
+
+    public async Task<UpdateStageResult?> UpdateStageAsync(long accountId, int currentStage, int stageDelta, long goldReward)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+
+        return await connection.QuerySingleOrDefaultAsync<UpdateStageResult>(PlayerQuery.UpdateStageAndGold, new { 
+            AccountId = accountId, 
+            CurrentStage = currentStage, 
+            StageDelta = stageDelta
+        });
+    }
+
+    public async Task<long?> UpdatePlayerLevelAsync(long accountId, int currentPlayerLevel, int playerLevelDelta, long cost)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+
+        return await connection.QuerySingleOrDefaultAsync<long?>(PlayerQuery.UpdatePlayerLevelAndGold, new
+        {
+            AccountId = accountId,
+            CurrentPlayerLevel = currentPlayerLevel,
+            PlayerLevelDelta = playerLevelDelta,
+            Cost = cost
+        });
+    }
+
+    public async Task<long?> UpdateGoldLevelAsync(long accountId, int currentGoldLevel, int goldLevelDelta, long cost)
+    {
+        await using var connection = new MySqlConnection(_connectionString);
+
+        return await connection.QuerySingleOrDefaultAsync<long?>(PlayerQuery.UpdateGoldLevelAndGold, new
+        {
+            AccountId = accountId,
+            CurrentGoldLevel = currentGoldLevel,
+            GoldLevelDelta = goldLevelDelta,
+            Cost = cost
+        });
     }
 }

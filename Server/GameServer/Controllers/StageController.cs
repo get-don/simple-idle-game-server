@@ -1,9 +1,6 @@
 ﻿using GameServer.Models.DTOs;
-using GameServer.Repositories.Interfaces;
 using GameServer.Services.interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace GameServer.Controllers
 {
@@ -20,10 +17,10 @@ namespace GameServer.Controllers
 
         [HttpPost("Clear")]
         [EndpointSummary("스테이지 클리어")]
-        public async Task<ActionResult<ApiResponse<StageClearResponseDto>>> StageClear(StageClearRequestDto stageClearDto)
+        public async Task<ActionResult<ApiResponse<StageClearResponseDto>>> StageClear(StageClearRequestDto requestDto)
         {
             var accountId = (long)HttpContext.Items["AccountId"]!;
-            var response = await _stageService.StageClearAsync(accountId, stageClearDto);
+            var response = await _stageService.StageClearAsync(accountId, requestDto);
 
             return Ok(response);            
         }

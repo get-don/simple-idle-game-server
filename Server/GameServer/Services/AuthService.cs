@@ -51,7 +51,7 @@ public class AuthService : IAuthService
         await _playerRepository.CreatePlayerAsync(new PlayerEntity
         {
             AccountId = accountId,
-            Level = 1,
+            PlayerLevel = 1,
             GoldLevel = 1,
             Stage = 1,
             Gold = 0
@@ -88,6 +88,7 @@ public class AuthService : IAuthService
         // 세션 생성 시도
         string? newToken = null;
 
+        // 동일한 토큰이 존재하는 상황을 대비한 코드 (불필요한 코드일 수 있음)
         for (var i = 0; i < 5; i++)
         {
             var token = TokenGenerator.CreateSessionToken();

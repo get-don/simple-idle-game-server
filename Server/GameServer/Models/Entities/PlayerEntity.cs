@@ -2,9 +2,8 @@
 
 public class PlayerEntity
 {
-    public long PlayerId { get; set; }
     public long AccountId { get; set; }
-    public int Level { get; set; }
+    public int PlayerLevel { get; set; }
     public int GoldLevel { get; set; }
     public int Stage { get; set; }
     public long Gold { get; set; }

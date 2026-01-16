@@ -18,6 +18,9 @@ public enum ErrorCode
 
     // Game
     NotExistsPlayer = 3000,
+    StageMismatch,
+    LevelUpFailed,
+    GoldLevelUpFailed,
 }
 
 public class ApiResponse<T>(bool ok = true) where T : class

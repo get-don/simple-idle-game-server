@@ -4,5 +4,5 @@ namespace GameServer.Services.interfaces;
 
 public interface IStageService
 {
-    public Task<ApiResponse<StageClearResponseDto>> StageClearAsync(long accountId, StageClearRequestDto stageClearDto);
+    public Task<ApiResponse<StageClearResponseDto>> StageClearAsync(long accountId, StageClearRequestDto requestDto);
 }
