@@ -2,6 +2,7 @@
 
 public class PlayerLevelUpResponseDto
 {
+    public int PrevLevel { get; set; }
     public int NextLevel { get; set; }
     public long Cost { get; set; }
     public long TotalGold { get; set; }

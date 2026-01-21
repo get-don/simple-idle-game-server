@@ -4,6 +4,7 @@ namespace GameServer.Services.interfaces;
 
 public interface IAuthService
 {
-    public Task<ApiResponse> RegisterAsync(AccountDto accountDto);
-    public Task<ApiResponse<AccountDto>> LoginAsync(AccountDto accountDto);
+    Task<ApiResponse> RegisterAsync(AccountDto requestDto);
+    Task<ApiResponse<AccountDto>> LoginAsync(AccountDto requestDto);
+    Task<ApiResponse> RenewSessionTtl(string token);
 }

@@ -35,4 +35,18 @@ public class AuthController : ControllerBase
         var response = await _authService.LoginAsync(requestDto);
         return Ok(response);
     }
+
+    [HttpGet("Alive")]
+    [EndpointSummary("세션 캐시 TTL 연장 요청")]
+    [ProducesResponseType(typeof(ApiResponse<AccountDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<ApiResponse>> AliveSession()
+    {
+        if (!Request.Headers.TryGetValue("X-Session-Token", out var token))
+            return null;
+
+        var sessionToken = token.ToString().Trim();
+
+        var response = await _authService.RenewSessionTtl(sessionToken);
+        return Ok(response);
+    }
 }

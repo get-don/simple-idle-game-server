@@ -13,27 +13,26 @@ public class PlayerStore : IPlayerStore
         _redis = redis;
     }
 
-    private static string Key(long playerId)
-        => $"player:state:{playerId}";
+    private string Key(long accountId) => $"player:state:{accountId}";
 
-    public async Task<PlayerInfo?> GetAsync(long playerId)
+    public async Task<PlayerInfo?> GetAsync(long accountId)
     {
-        var json = await _redis.GetStringAsync(Key(playerId));
+        var json = await _redis.GetStringAsync(Key(accountId));
         return json == null
             ? null
             : JsonSerializer.Deserialize<PlayerInfo>(json);
     }
 
-    public Task SetAsync(long playerId, PlayerInfo playerInfo)
+    public Task SetAsync(long accountId, PlayerInfo playerInfo)
     {
         var json = JsonSerializer.Serialize(playerInfo);
         return _redis.SetStringAsync(
-            Key(playerId),
+            Key(accountId),
             json,
             TimeSpan.FromSeconds(30)
         );
     }
 
-    public Task InvalidateAsync(long playerId)
-        => _redis.DeleteAsync(Key(playerId));
+    public Task InvalidateAsync(long accountId)
+        => _redis.DeleteAsync(Key(accountId));
 }

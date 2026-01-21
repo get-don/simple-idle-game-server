@@ -9,4 +9,5 @@ public interface IRedisStore
     Task<bool> SetStringNxAsync(string key, string value, TimeSpan ttl);
     Task<bool> DeleteAsync(string key);
     Task<long> EvaluateAsync(string script, string[] keys, RedisValue[] values);
+    Task<bool> KeyExpireAsync(string key, TimeSpan ttl);
 }

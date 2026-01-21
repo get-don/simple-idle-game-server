@@ -24,14 +24,14 @@ public class AuthService : IAuthService
         _passwordHasher = passwordHasher;
     }
 
-    public async Task<ApiResponse> RegisterAsync(AccountDto accountDto)
+    public async Task<ApiResponse> RegisterAsync(AccountDto requestDto)
     {
         // Note: 디버깅용 로그이므로 Logger 사용 안함
-        Console.WriteLine($"[{nameof(AuthService)}.{nameof(RegisterAsync)}] Email: {accountDto.Email}, Password: {accountDto.Password}");
+        Console.WriteLine($"[{nameof(AuthService)}.{nameof(RegisterAsync)}] Email: {requestDto.Email}, Password: {requestDto.Password}");
 
         var response = new ApiResponse();
 
-        if (await _accountRepository.ExistsAsync(accountDto.Email))
+        if (await _accountRepository.ExistsAsync(requestDto.Email))
         {
             response.Ok = false;
             response.ErrorCode = ErrorCode.EmailAlreadyExists;
@@ -40,10 +40,10 @@ public class AuthService : IAuthService
 
         var account = new AccountEntity
         {
-            Email = accountDto.Email,
+            Email = requestDto.Email,
         };
 
-        account.Password = _passwordHasher.HashPassword(account, accountDto.Password);
+        account.Password = _passwordHasher.HashPassword(account, requestDto.Password);
 
         // TODO: 아래 두 처리는 트랜잭션으로 묶어야 함.
         var accountId = await _accountRepository.CreateAccountAsync(account);
@@ -60,13 +60,13 @@ public class AuthService : IAuthService
         return response;
     }
 
-    public async Task<ApiResponse<AccountDto>> LoginAsync(AccountDto accountDto)
+    public async Task<ApiResponse<AccountDto>> LoginAsync(AccountDto requestDto)
     {
-        Console.WriteLine($"[{nameof(AuthService)}.{nameof(LoginAsync)}] Email: {accountDto.Email}, Password: {accountDto.Password}");
+        Console.WriteLine($"[{nameof(AuthService)}.{nameof(LoginAsync)}] Email: {requestDto.Email}, Password: {requestDto.Password}");
 
         var response = new ApiResponse<AccountDto>();
 
-        var account = await _accountRepository.GetAccountAsync(accountDto.Email);
+        var account = await _accountRepository.GetAccountAsync(requestDto.Email);
         if (account is null)
         {
             response.Ok = false;
@@ -74,7 +74,7 @@ public class AuthService : IAuthService
             return response;
         }
 
-        var verify = _passwordHasher.VerifyHashedPassword(account, account.Password, accountDto.Password);
+        var verify = _passwordHasher.VerifyHashedPassword(account, account.Password, requestDto.Password);
         if (verify == PasswordVerificationResult.Failed)
         {
             response.Ok = false;
@@ -101,7 +101,7 @@ public class AuthService : IAuthService
                 LoginTime = DateTime.UtcNow
             };
 
-            if (await _accountStore.TryCreateSessionAsync(session, TimeSpan.FromMinutes(5)))
+            if (await _accountStore.TryCreateSessionAsync(session))
             {
                 newToken = token;
                 break;
@@ -124,13 +124,28 @@ public class AuthService : IAuthService
                 
         response.Result = new AccountDto
         {
-            Email = accountDto.Email,
+            Email = requestDto.Email,
             Password = "",
             Token = newToken
         };
 
-        Console.WriteLine($"[{nameof(AuthService)}.{nameof(LoginAsync)}] Success Email: {accountDto.Email}, AccountId: {account.AccountId}, Token: {accountDto.Token}");
+        Console.WriteLine($"[{nameof(AuthService)}.{nameof(LoginAsync)}] Success Email: {requestDto.Email}, AccountId: {account.AccountId}, Token: {requestDto.Token}");
 
+        return response;
+    }
+
+    public async Task<ApiResponse> RenewSessionTtl(string token)
+    {
+        var response = new ApiResponse();
+
+        var session = await _accountStore.GetSessionAsync(token);
+        if (session is null)
+        {
+            response.ErrorCode = ErrorCode.AuthTokenNotExists;
+            return response;
+        }
+
+        await _accountStore.RenewSessionTtl(session);
         return response;
     }
 }

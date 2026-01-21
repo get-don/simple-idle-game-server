@@ -35,6 +35,7 @@ builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
 
 builder.Services.AddScoped<IRedisStore, RedisStore>();
 builder.Services.AddScoped<IAccountStore, AccountStore>();
+builder.Services.AddScoped<IIdempotencyStore, IdempotencyStore>();
 
 builder.Services.AddScoped<SessionAuthMiddleware>();
 

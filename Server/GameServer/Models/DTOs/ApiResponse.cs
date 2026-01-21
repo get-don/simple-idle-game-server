@@ -8,6 +8,8 @@ public enum ErrorCode
     InternalServerError = 1000,
     ValidationFailed,
     RequestInProgress,
+    DuplicateRequest,
+    
 
     // Auth
     EmailAlreadyExists = 2000,
@@ -36,6 +38,7 @@ public class ApiResponse<T>(bool ok = true) where T : class
         {
             _errorCode = value;
             ErrorCodeName = value.ToString();
+            Ok = _errorCode == ErrorCode.Ok;
         }
     }
         
@@ -46,3 +49,4 @@ public class ApiResponse<T>(bool ok = true) where T : class
 }
 
 public class ApiResponse(bool ok = true) : ApiResponse<object>(ok) { }
+

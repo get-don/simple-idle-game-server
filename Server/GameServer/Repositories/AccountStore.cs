@@ -1,6 +1,5 @@
 ﻿using GameServer.Models;
 using GameServer.Repositories.Interfaces;
-using StackExchange.Redis;
 using System.Text.Json;
 
 namespace GameServer.Repositories;
@@ -8,24 +7,26 @@ namespace GameServer.Repositories;
 public class AccountStore : IAccountStore
 {
     private readonly IRedisStore _redis;
+    private readonly TimeSpan _ttl;
     private static readonly JsonSerializerOptions JsonOpt = new(JsonSerializerDefaults.Web);
 
-    private static string TokenKey(string token) => $"session:token:{token}";
-    private static string AccountKey(long accountId) => $"session:account:{accountId}";
+    private string TokenKey(string token) => $"session:token:{token}";
+    private string AccountKey(long accountId) => $"session:account:{accountId}";
 
 
     public AccountStore(IRedisStore redis)
     {
         _redis = redis;
+        _ttl = TimeSpan.FromMinutes(5);
     }
 
-    public async Task<bool> TryCreateSessionAsync(UserSession session, TimeSpan ttl)
+    public async Task<bool> TryCreateSessionAsync(UserSession session)
     {
         string tokenKey = TokenKey(session.Token);
         string accountKey = AccountKey(session.AccountId);
 
         string sessionJson = JsonSerializer.Serialize(session, JsonOpt);
-        long ttlSeconds = (long)ttl.TotalSeconds;                    
+        long ttlSeconds = (long)_ttl.TotalSeconds;                    
 
         const string script = """
         if redis.call('EXISTS', KEYS[1]) == 1 then
@@ -74,5 +75,12 @@ public class AccountStore : IAccountStore
         return session?.Token;
     }
 
+    public async Task RenewSessionTtl(UserSession session)
+    {
+        string tokenKey = TokenKey(session.Token);
+        string accountKey = AccountKey(session.AccountId);
 
+        await _redis.KeyExpireAsync(tokenKey, _ttl);
+        await _redis.KeyExpireAsync(accountKey, _ttl);
+    }
 }

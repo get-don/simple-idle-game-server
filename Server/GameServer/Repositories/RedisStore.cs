@@ -18,14 +18,20 @@ public class RedisStore : IRedisStore
         return value.HasValue ? value.ToString() : null;
     }
 
-    public async Task<bool> SetStringAsync(string key, string value, TimeSpan? ttl = null, When when = When.Always) 
-        => await _redis.StringSetAsync(key, value, ttl, when);
+    public async Task<bool> SetStringAsync(string key, string value, TimeSpan? ttl = null, When when = When.Always)
+        => await _redis.StringSetAsync(key: key, value: value, expiry: ttl, when: when);
 
-    public async Task<bool> SetStringNxAsync(string key, string value, TimeSpan ttl) 
-        => await _redis.StringSetAsync(key, value, ttl, When.NotExists);
+    public async Task<bool> SetStringKeepTtlAsync(string key, string value)
+        => await _redis.StringSetAsync(key: key, value: value, expiry: null, keepTtl: true);
+
+    public async Task<bool> SetStringNxAsync(string key, string value, TimeSpan ttl)
+        => await _redis.StringSetAsync(key: key, value: value, expiry: ttl, when: When.NotExists);
 
     public async Task<bool> DeleteAsync(string key)
-    => await _redis.KeyDeleteAsync(key);
+        => await _redis.KeyDeleteAsync(key);
+
+    public async Task<bool> KeyExpireAsync(string key, TimeSpan ttl)
+        => await _redis.KeyExpireAsync(key, ttl);
 
     public async Task<long> EvaluateAsync(string script, string[] keys, RedisValue[] values)
     {
@@ -33,4 +39,5 @@ public class RedisStore : IRedisStore
         var result = await _redis.ScriptEvaluateAsync(script, redisKeys, values);
         return (long)result;
     }
+
 }
